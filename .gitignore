@@ -1,0 +1,3 @@
+build_native/**
+build_wasm/**
+external/**

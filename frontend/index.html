@@ -1,29 +1,31 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Color Grid WASM Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body { font-family: system-ui, sans-serif; padding: 20px; }
-      #controls { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
-      canvas { border: 1px solid #ddd; image-rendering: pixelated; }
-    </style>
-  </head>
-  <body>
-    <h1>Color Grid (C++ → WASM)</h1>
-    <div id="controls">
-      <label>Size:
-        <input id="dim" type="number" value="5" min="2" max="20" />
-      </label>
-      <label>Iterations:
-        <input id="iters" type="number" value="5000" min="1" />
-      </label>
-      <button id="run">Generate best grid</button>
-      <span id="status"></span>
-    </div>
-    <canvas id="grid" width="250" height="250"></canvas>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="style.css"/>
+</head>
 
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<body>
+<div id="grid-wrapper">
+    <div id="grid-container">
+        <canvas class="grid" data-dim="3"></canvas>
+        <canvas class="grid" data-dim="5"></canvas>
+        <canvas class="grid" data-dim="7"></canvas>
+        <canvas class="grid" data-dim="13"></canvas>
+    </div>
+</div>
+<div id="controls">
+    <label>
+        <input type="checkbox" id="constantCells" checked/>
+        constant cell size
+    </label>
+    <label>Iterations:
+        <input id="iters" type="number" value="5000" min="1"/>
+    </label>
+    <button id="run">Generate best grid</button>
+    <span id="status"></span>
+</div>
+<script type="module" src="/src/main.ts"></script>
+</body>
 </html>

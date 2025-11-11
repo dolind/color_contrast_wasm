@@ -1,14 +1,16 @@
+
 type RGB = { r: number; g: number; b: number };
 type OilColor = { name: string; rgbValue: RGB };
 type WasmVector<T> = {
     get(index: number): T;
     size(): number;
 };
-type GridResult = { colors: WasmVector<OilColor>; score: number; iterations: number; };
+type GridResult = { colors: OilColor[]; score: number; iterations: number; };
+
 
 
 interface GridData {
-    colors: WasmVector<OilColor>;
+    colors: OilColor[];
     dim: number;
 }
 
@@ -44,7 +46,7 @@ function drawGrid(canvas: HTMLCanvasElement, result: GridResult, dim: number) {
     let k = 0;
     for (let y = 0; y < dim; y++) {
         for (let x = 0; x < dim; x++) {
-            const {r, g, b} = result.colors.get(k).rgbValue;
+            const {r, g, b} = result.colors[k].rgbValue;
             k++;
             ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
             ctx.fillRect(x * cellPx, y * cellPx, cellPx, cellPx);
@@ -98,7 +100,7 @@ canvases.forEach(canvas => {
         const row = Math.floor(y / cellPx);
         const idx = row * dim + col;
 
-        const color = colors.get(idx);
+        const color = colors[idx];
         if (!color) {
             tooltip.style.opacity = "0";
             return;
@@ -150,42 +152,65 @@ function updateStatsTable() {
     `;
 }
 
+import workerUrl from "./gridWorker.ts?worker&url";  // 👈 important
+
+const MAX_WORKERS = 5;
+const workers: Worker[] = [];
+const taskQueue: number[] = []; // store canvas indexes instead of canvases
+
+function assignTask(worker: Worker, canvasIndex: number) {
+    const canvas = canvases[canvasIndex];
+    const dim = Number(canvas.dataset.dim);
+
+    stats[dim] = { score: 0, time: 0, iterations: 0, started: performance.now() };
+
+    worker.postMessage({
+        canvasIndex,  // directly reference canvas
+        dim,
+        scriptUrl
+    });
+}
 
 async function animateAllGrids() {
     sizeCanvases();
-    const module = await ensureModule();
+    await ensureModule();
 
-    canvases.forEach((canvas, idx) => {
-        const dim = Number(canvas.dataset.dim);
-        stats[dim] = {score: 0, time: 0, iterations: 0, started: performance.now()};
-        module.start_search(idx, dim, 2000); // each grid has its own engine instance
+    // build queue with numeric indexes
+    for (let i = 0; i < canvases.length; i++) taskQueue.push(i);
 
-    });
+    // create worker pool
+    for (let i = 0; i < MAX_WORKERS; i++) {
+        const worker = new Worker(workerUrl, { type: "module" });
 
-    function animate() {
-        canvases.forEach((canvas, idx) => {
+        worker.onmessage = (ev) => {
+            const { canvasIndex, result } = ev.data;
+            const canvas = canvases[canvasIndex];
             const dim = Number(canvas.dataset.dim);
-            const t0 = performance.now();
 
-            const result = wasmModule!.step_search(idx) as GridResult;
-
-            const dt = performance.now() - t0;
-            const elapsed = performance.now() - stats[dim].started;
             drawGrid(canvas, result, dim);
 
             stats[dim] = {
                 score: result.score,
-                time: elapsed,
+                time: performance.now() - stats[dim].started,
                 iterations: result.iterations,
                 started: stats[dim].started
             };
-        });
 
-        updateStatsTable();
-        requestAnimationFrame(animate);
+            updateStatsTable();
+
+            const next = taskQueue.shift();
+            if (next !== undefined) assignTask(worker, next);
+        };
+
+        workers.push(worker);
     }
 
-    animate();
+    // start initial batch
+    workers.forEach(worker => {
+        const idx = taskQueue.shift();
+        if (idx !== undefined) assignTask(worker, idx);
+    });
 }
+
 
 ensureModule().then(() => animateAllGrids());

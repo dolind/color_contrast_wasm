@@ -48,7 +48,8 @@ Grid::Grid(const Grid& grid)
       m_Luminance(grid.m_Luminance),
       m_gridScore(grid.m_gridScore),
       m_width(grid.m_width),
-      m_height(grid.m_height)
+      m_height(grid.m_height),
+      iterationCount(grid.iterationCount)
 {}
 
 
@@ -138,6 +139,7 @@ GridResult Grid::toResult() const
 {
     GridResult result;
     result.score = m_gridScore;
+    result.iterations = iterationCount;
     result.colors.reserve(m_width * m_height);
 
     for (int y = 0; y < m_height; ++y) {

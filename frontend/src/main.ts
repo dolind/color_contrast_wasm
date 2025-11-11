@@ -4,8 +4,7 @@ type WasmVector<T> = {
     get(index: number): T;
     size(): number;
 };
-type GridResult = { colors: WasmVector<OilColor>; score: number };
-
+type GridResult = { colors: WasmVector<OilColor>; score: number; iterations: number; };
 
 
 interface GridData {
@@ -14,7 +13,12 @@ interface GridData {
 }
 
 const gridData = new WeakMap<HTMLCanvasElement, GridData>();
-
+const stats: Record<number, {
+    score: number;
+    time: number;
+    iterations: number;
+    started: number;
+}> = {};
 const scriptUrl = new URL('/color_contrast_wasm.js', import.meta.url).href;
 const createModule = (await import(scriptUrl)).default;
 
@@ -28,6 +32,24 @@ async function ensureModule() {
         wasmModule = await createModule();
     }
     return wasmModule;
+}
+
+
+function drawGrid(canvas: HTMLCanvasElement, result: GridResult, dim: number) {
+    const ctx = canvas.getContext("2d")!;
+    const cellPx = canvas.width / dim;
+
+    gridData.set(canvas, {colors: result.colors, dim});
+
+    let k = 0;
+    for (let y = 0; y < dim; y++) {
+        for (let x = 0; x < dim; x++) {
+            const {r, g, b} = result.colors.get(k).rgbValue;
+            k++;
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillRect(x * cellPx, y * cellPx, cellPx, cellPx);
+        }
+    }
 }
 
 function sizeCanvases(): void {
@@ -54,50 +76,10 @@ function sizeCanvases(): void {
     });
 }
 
-async function renderGrid(canvas: HTMLCanvasElement, dim: number): Promise<number> {
-    const module = await ensureModule();        // ✅ reuse module
-    const result = module.compute_grid(dim, 1000) as GridResult;
-
-    const ctx = canvas.getContext("2d")!;
-    const cellPx = canvas.width / dim;
-
-    gridData.set(canvas, {
-        colors: result.colors,
-        dim
-    });
-
-    let k = 0;
-    for (let y = 0; y < dim; y++) {
-        for (let x = 0; x < dim; x++) {
-
-            const {r, g, b} = result.colors.get(k).rgbValue;
-            k++;
-            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-            ctx.fillRect(x * cellPx, y * cellPx, cellPx, cellPx);
-        }
-    }
-    return result.score;
-}
-
-async function renderAll(): Promise<void> {
-    sizeCanvases();
-    const stats: { dim: number; score: number; time: number }[] = [];
-
-    await Promise.all(
-        canvases.map(async (canvas) => {
-            const dim = Number(canvas.dataset.dim);
-            const start = performance.now();
-
-            const score = await renderGrid(canvas, dim);
-            const time = performance.now() - start;
-            stats.push({dim, score, time});
-        })
-    );
-    updateStatsTable(stats);
-}
-
 // Checkbox toggles cell sizing mode
-constantCellsCheckbox.addEventListener("change", renderAll);
+constantCellsCheckbox?.addEventListener("change", () => {
+    sizeCanvases(); // keep animation running, just resize
+});
 
 const tooltip = document.getElementById("tooltip") as HTMLDivElement;
 canvases.forEach(canvas => {
@@ -133,27 +115,77 @@ canvases.forEach(canvas => {
     });
 });
 
-function updateStatsTable(rows: { dim: number; score: number; time: number }[]) {
+function updateStatsTable() {
     const div = document.getElementById("grid-stats")!;
+
+    const rows = Object.keys(stats)
+        .sort((a, b) => Number(a) - Number(b))
+        .map(dimStr => {
+            const dim = Number(dimStr);
+            const s = stats[dim];
+
+            return `
+                <tr>
+                  <td>${dim}</td>
+                  <td>${s.score.toFixed(2)}</td>
+                  <td>${s.time.toFixed(1)}</td>
+                  <td>${s.iterations}</td>
+                </tr>
+            `;
+        })
+        .join("");
+
     div.innerHTML = `
       <table>
         <thead>
-          <tr><th>dim</th><th>score</th><th>time (ms)</th></tr>
+          <tr>
+            <th>dim</th>
+            <th>score</th>
+            <th>time (ms)</th>
+            <th>iterations</th>   <!-- ✅ new column -->
+          </tr>
         </thead>
-        <tbody>
-          ${rows
-              .map(row => `
-              <tr>
-                <td>${row.dim}</td>
-                <td>${row.score.toFixed(2)}</td>
-                <td>${row.time.toFixed(1)}</td>
-              </tr>`
-              )
-              .join("")}
-        </tbody>
+        <tbody>${rows}</tbody>
       </table>
     `;
 }
 
-// Initial render
-renderAll();
+
+async function animateAllGrids() {
+    sizeCanvases();
+    const module = await ensureModule();
+
+    canvases.forEach((canvas, idx) => {
+        const dim = Number(canvas.dataset.dim);
+        stats[dim] = {score: 0, time: 0, iterations: 0, started: performance.now()};
+        module.start_search(idx, dim, 2000); // each grid has its own engine instance
+
+    });
+
+    function animate() {
+        canvases.forEach((canvas, idx) => {
+            const dim = Number(canvas.dataset.dim);
+            const t0 = performance.now();
+
+            const result = wasmModule!.step_search(idx) as GridResult;
+
+            const dt = performance.now() - t0;
+            const elapsed = performance.now() - stats[dim].started;
+            drawGrid(canvas, result, dim);
+
+            stats[dim] = {
+                score: result.score,
+                time: elapsed,
+                iterations: result.iterations,
+                started: stats[dim].started
+            };
+        });
+
+        updateStatsTable();
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+}
+
+ensureModule().then(() => animateAllGrids());

@@ -10,51 +10,27 @@
 #include "engine.hpp"
 using namespace color_contrast;
 
-// Same semantics as native main()
-GridResult compute_grid(int dim, int iterations)
+
+std::unordered_map<int, std::unique_ptr<Engine>> engines;
+
+
+void start_search(int id, int dim, int max_iters)
 {
     AlgorithmConfig cfg;
     cfg.dim = dim;
-    cfg.max_iterations = iterations;
+    cfg.max_iterations = max_iters;
 
-    Engine e(std::make_unique<BruteForce>());
-    Grid best = e.compute(cfg);
+    engines[id] = std::make_unique<Engine>(std::make_unique<BruteForce>(), cfg);
+    }
 
-    return best.toResult();
+GridResult step_search(int id) {
+    return engines[id]->step().toResult();
 }
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
 using namespace emscripten;
-
-val compute_grid_js(int dim, int iters)
-{
-    auto res = compute_grid(dim, iters); // This returns GridResult
-
-    val jsResult = val::object();
-    jsResult.set("score", res.score);
-
-    val jsArray = val::array();
-    for (size_t i = 0; i < res.colors.size(); ++i) {
-        const auto& cl = res.colors[i];
-
-        val jsColor = val::object();
-        jsColor.set("name", cl.name);
-
-        // ✅ proper array construction in embind
-        val rgb = val::array();
-        rgb.set(0, cl.rgbValue.r);
-        rgb.set(1, cl.rgbValue.g);
-        rgb.set(2, cl.rgbValue.b);
-
-        jsColor.set("rgb", rgb);
-        jsArray.set(i, jsColor);
-    }
-
-    jsResult.set("colors", jsArray);
-    return jsResult;
-}
 
 
 
@@ -73,7 +49,11 @@ EMSCRIPTEN_BINDINGS(color_grid_module) {
 
     emscripten::value_object<GridResult>("GridResult")
         .field("colors", &GridResult::colors)
-        .field("score", &GridResult::score);
+        .field("score", &GridResult::score)
+        .field("iterations", &GridResult::iterations);
 
-    emscripten::function("compute_grid", &compute_grid);
+
+    emscripten::function("start_search", &start_search);
+    emscripten::function("step_search", &step_search);
+
 }

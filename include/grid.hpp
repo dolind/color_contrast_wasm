@@ -13,6 +13,7 @@ static constexpr std::int32_t COLORS_AVAILABLE = 25;
 struct GridResult {
     std::vector<COilColor> colors;
     double score;
+    int iterations;
 };
 
 
@@ -33,9 +34,11 @@ public:
     const Cell& at(int x, int y) const { return m_Cells[y * m_width + x]; }
     void printToConsole() const;
     GridResult toResult() const;
+    void setIterations(int i) { iterationCount = i; }
+    int iterations() const { return iterationCount; }
 private:
     void evaluateGridScore();         // like Python, computes score
-
+    int iterationCount = 0;
     std::unordered_map<int, COilColor> colors = {
         {1, {"rose madder",          {227,  38,  54}}},
         {2, {"dunkelgrün",           {  0, 136,   0}}},

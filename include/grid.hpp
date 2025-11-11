@@ -8,6 +8,14 @@ namespace color_contrast {
 
 static constexpr std::int32_t COLORS_AVAILABLE = 25;
 
+
+
+struct GridResult {
+    std::vector<COilColor> colors;
+    double score;
+};
+
+
 class Grid {
 
 public:
@@ -24,6 +32,7 @@ public:
     Cell& at(int x, int y)             { return m_Cells[y * m_width + x]; }
     const Cell& at(int x, int y) const { return m_Cells[y * m_width + x]; }
     void printToConsole() const;
+    GridResult toResult() const;
 private:
     void evaluateGridScore();         // like Python, computes score
 

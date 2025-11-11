@@ -132,4 +132,23 @@ void Grid::printToConsole() const
 
     std::cout << "------------------------------------------------------------\n\n";
 }
+
+
+GridResult Grid::toResult() const
+{
+    GridResult result;
+    result.score = m_gridScore;
+    result.colors.reserve(m_width * m_height);
+
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            const auto& cell = at(x, y);
+            result.colors.push_back({ cell.getName(), cell.getRGBColor() });
+        }
+    }
+
+    return result;
+}
+
+
 } // namespace color_contrast

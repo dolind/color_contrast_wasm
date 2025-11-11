@@ -11,7 +11,7 @@ fi
 echo "=== Building WebAssembly target ==="
 
 mkdir -p build_wasm
-cd build_wasm
+pushd build_wasm
 
 # configure using emcmake
 emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -19,8 +19,8 @@ emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
 # run build
 cmake --build .
 
-echo ""
 echo "✅ WASM build done."
 
-echo ""
-cp build_wasm/color_contrast.* frontend/public/
+popd
+cp build_wasm/color_contrast.js frontend/public/
+cp build_wasm/color_contrast.wasm frontend/public/

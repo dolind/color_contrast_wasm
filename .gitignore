@@ -1,3 +1,4 @@
 build_native/**
 build_wasm/**
 external/**
+frontend/node_modules/**

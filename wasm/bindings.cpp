@@ -7,39 +7,38 @@
 #include "color_cell.hpp"
 #include "color_grid.hpp"
 
-// Run 'iterations' random grids of size dim x dim,
-// return the best grid's colors as [r,g,b, r,g,b, ...] row-major.
-std::vector<std::uint8_t> generate_best_grid_rgb(int dim, int iterations)
+using namespace color_contrast;
+
+// Same semantics as native main()
+GridResult wasm_compute_grid(int dim, int iterations)
 {
-    using namespace color_contrast;
+    AlgorithmConfig cfg;
+    cfg.dim = dim;              // let algorithm choose or expose dim to JS
+    cfg.max_iterations = iterations;
 
-    double bestScore = -1.0;
-    CGrid best(dim, dim);
+    Engine e(std::make_unique<BruteForce>());
+    Grid best = e.compute(cfg);      // <-- identical logic to native main()
 
-    for (int i = 0; i < iterations; ++i) {
-        CGrid g(dim, dim);
-        double s = g.getScore();
-        if (s > bestScore) {
-            bestScore = s;
-            best = g; // copy
-        }
-    }
-
-    // Flatten to RGB bytes, row-major
-    std::vector<std::uint8_t> out;
-    out.reserve(dim * dim * 3);
-
-    for (int y = 0; y < best.height(); ++y) {
-        for (int x = 0; x < best.width(); ++x) {
-            RGB c = best.at(x, y).getRGBColor();
-            out.push_back(c.r);
-            out.push_back(c.g);
-            out.push_back(c.b);
-        }
-    }
-    return out;
+    // Let the grid convert itself to a JS-serializable result
+    return best.toResult();
 }
 
 EMSCRIPTEN_BINDINGS(color_grid_module) {
-    emscripten::function("generate_best_grid_rgb", &generate_best_grid_rgb);
+
+    emscripten::value_object<RGB>("RGB")
+        .field("r", &RGB::r)
+        .field("g", &RGB::g)
+        .field("b", &RGB::b);
+
+    emscripten::value_object<COilColor>("COilColor")
+        .field("name", &COilColor::name)
+        .field("rgbValue", &COilColor::rgbValue);
+
+    emscripten::register_vector<COilColor>("vector<COilColor>");
+
+    emscripten::value_object<GridResult>("GridResult")
+        .field("colors", &GridResult::colors)
+        .field("score", &GridResult::score);
+
+    emscripten::function("compute_grid", &wasm_compute_grid);
 }

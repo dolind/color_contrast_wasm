@@ -44,17 +44,12 @@ std::vector<std::uint32_t> pool(COLORS_AVAILABLE);
     }
 
 Grid::Grid(const Grid& grid)
-    : m_Cells(grid.m_Cells),
-      m_Luminance(grid.m_Luminance),
-      m_gridScore(grid.m_gridScore),
-      m_width(grid.m_width),
-      m_height(grid.m_height),
-      iterationCount(grid.iterationCount)
+    : BaseGrid(grid)
 {}
 
 
 Grid::Grid(int width, int height)
-    : m_width(width), m_height(height)
+    : BaseGrid(width, height)
 {
     auto colorNumbers = getUniqueColorNum(width * height);
 
@@ -114,7 +109,7 @@ void Grid::evaluateGridScore()
     }
 }
 
-void Grid::printToConsole() const
+void BaseGrid::printToConsole() const
 {
     std::cout << "Grid (" << m_width << "x" << m_height << ") score=" << m_gridScore << "\n";
     std::cout << "------------------------------------------------------------\n";
@@ -135,7 +130,7 @@ void Grid::printToConsole() const
 }
 
 
-GridResult Grid::toResult() const
+GridResult BaseGrid::toResult() const
 {
     GridResult result;
     result.score = m_gridScore;

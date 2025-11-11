@@ -12,15 +12,7 @@ body {
     position: relative;
 }
 
-#controls {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 1.2rem 0;
 
-  position: absolute;
-  bottom: 0;
-}
 #grid-wrapper {
   flex: 1;
   display: flex;
@@ -52,30 +44,32 @@ body {
   transition: opacity 0.15s ease-out;
   transform: translate(-50%, -120%);
 }
-
-#grid-stats {
-  margin-top: 2rem;
-  display: flex;
-  justify-content: center;
+#layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
 }
 
+/* Keep table as-is */
 #grid-stats table {
-  border-collapse: collapse;
-  color: #ccc;
-  font-size: 0.9rem;
+    border-collapse: collapse;
+    min-width: 180px;
 }
 
-#grid-stats th,
-#grid-stats td {
-  padding: 6px 12px;
-  text-align: center;
+/* Stack controls vertically */
+#controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-#grid-stats th {
-  opacity: 0.7;
-  font-weight: 500;
+#controls label {
+    cursor: pointer;
+    user-select: none;
 }
 
-#grid-stats tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.04);
+#grid-time {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    opacity: 0.75;
 }

@@ -1,4 +1,3 @@
-
 type RGB = { r: number; g: number; b: number };
 type OilColor = { name: string; rgbValue: RGB };
 type WasmVector<T> = {
@@ -6,7 +5,6 @@ type WasmVector<T> = {
     size(): number;
 };
 type GridResult = { colors: OilColor[]; score: number; iterations: number; };
-
 
 
 interface GridData {
@@ -119,6 +117,7 @@ canvases.forEach(canvas => {
 
 function updateStatsTable() {
     const div = document.getElementById("grid-stats")!;
+    const timeDiv = document.getElementById("grid-time")!; // new separate display
 
     const rows = Object.keys(stats)
         .sort((a, b) => Number(a) - Number(b))
@@ -130,7 +129,6 @@ function updateStatsTable() {
                 <tr>
                   <td>${dim}</td>
                   <td>${s.score.toFixed(2)}</td>
-                  <td>${s.time.toFixed(1)}</td>
                   <td>${s.iterations}</td>
                 </tr>
             `;
@@ -143,26 +141,34 @@ function updateStatsTable() {
           <tr>
             <th>dim</th>
             <th>score</th>
-            <th>time (ms)</th>
-            <th>iterations</th>   <!-- ✅ new column -->
+            <th>iterations</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
     `;
+
+    // ⏱ show most recent elapsed time separately
+    const maxDim = Math.max(...Object.keys(stats).map(Number));
+    const last = stats[maxDim];
+    if (last) {
+        timeDiv.textContent = `Elapsed time: ${last.time.toFixed(1)} ms`;
+    }
 }
 
-import workerUrl from "./gridWorker.ts?worker&url";  // 👈 important
+
+import workerUrl from "./gridWorker.ts?worker&url"; // 👈 important
 
 const MAX_WORKERS = 5;
 const workers: Worker[] = [];
 const taskQueue: number[] = []; // store canvas indexes instead of canvases
+let stopTimeoutId: number | null = null;
 
 function assignTask(worker: Worker, canvasIndex: number) {
     const canvas = canvases[canvasIndex];
     const dim = Number(canvas.dataset.dim);
 
-    stats[dim] = { score: 0, time: 0, iterations: 0, started: performance.now() };
+    stats[dim] = {score: 0, time: 0, iterations: 0, started: performance.now()};
 
     worker.postMessage({
         canvasIndex,  // directly reference canvas
@@ -180,10 +186,10 @@ async function animateAllGrids() {
 
     // create worker pool
     for (let i = 0; i < MAX_WORKERS; i++) {
-        const worker = new Worker(workerUrl, { type: "module" });
+        const worker = new Worker(workerUrl, {type: "module"});
 
         worker.onmessage = (ev) => {
-            const { canvasIndex, result } = ev.data;
+            const {canvasIndex, result} = ev.data;
             const canvas = canvases[canvasIndex];
             const dim = Number(canvas.dataset.dim);
 
@@ -210,7 +216,39 @@ async function animateAllGrids() {
         const idx = taskQueue.shift();
         if (idx !== undefined) assignTask(worker, idx);
     });
+
+
+    const maxTimeInput = document.getElementById("iters") as HTMLInputElement;
+    const maxTimeSec = Number(maxTimeInput.value);
+
+    stopTimeoutId = window.setTimeout(() => {
+        console.log(`⏹ stopping after ${maxTimeSec}s`);
+
+        workers.forEach(w => w.terminate());
+        workers.length = 0;
+
+        const timeDiv = document.getElementById("grid-time");
+        if (timeDiv) timeDiv.textContent = `Stopped after ${maxTimeSec} seconds`;
+    }, maxTimeSec * 1000);
+
 }
+
+
+const maxTimeInput = document.getElementById("iters") as HTMLInputElement;
+maxTimeInput.addEventListener("change", () => {
+    console.log("⏹ Restarting due to new MaxTime input");
+
+    workers.forEach(w => w.terminate());
+    workers.length = 0;
+    taskQueue.length = 0;
+
+    if (stopTimeoutId !== null) {
+        clearTimeout(stopTimeoutId);
+        stopTimeoutId = null;
+    }
+
+    animateAllGrids();
+});
 
 
 ensureModule().then(() => animateAllGrids());

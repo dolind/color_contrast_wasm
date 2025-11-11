@@ -17,18 +17,26 @@
     </div>
 </div>
 <div id="tooltip"></div>
-<div id="grid-stats"></div>
-<div id="controls">
-    <label>
-        <input type="checkbox" id="constantCells" checked/>
-        constant cell size
-    </label>
-    <label>Iterations:
-        <input id="iters" type="number" value="5000" min="1"/>
-    </label>
-    <button id="run">Generate best grid</button>
-    <span id="status"></span>
+
+
+<div id="layout">
+    <div id="grid-stats"></div>  <!-- table injected by JS -->
+
+    <div id="controls">
+        <label>
+            <input type="checkbox" id="constantCells" checked />
+            constant cell size
+        </label>
+
+        <label>
+            MaxTime [s]:
+            <input id="iters" type="number" value="30" min="1" />
+        </label>
+    </div>
 </div>
+
+<div id="grid-time"></div>
+
 <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

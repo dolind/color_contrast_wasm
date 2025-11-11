@@ -48,6 +48,9 @@ async function renderGrid(canvas: HTMLCanvasElement, dim: number): Promise<void>
     const ctx = canvas.getContext("2d")!;
     const cellPx = canvas.width / dim;
 
+      (canvas as any)._colors = result.colors;
+  (canvas as any)._dim = dim;
+
     let k = 0;
     for (let y = 0; y < dim; y++) {
         for (let x = 0; x < dim; x++) {
@@ -71,6 +74,39 @@ async function renderAll(): Promise<void> {
 
 // Checkbox toggles cell sizing mode
 constantCellsCheckbox.addEventListener("change", renderAll);
+
+const tooltip = document.getElementById("tooltip") as HTMLDivElement;
+canvases.forEach(canvas => {
+  canvas.addEventListener("mousemove", (ev) => {
+    const colors = (canvas as any)._colors;
+    const dim = (canvas as any)._dim;
+    if (!colors) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+
+    const cellPx = canvas.width / dim;
+    const col = Math.floor(x / cellPx);
+    const row = Math.floor(y / cellPx);
+    const idx = row * dim + col;
+
+    const color = colors[idx];
+    if (!color) {
+      tooltip.style.opacity = "0";
+      return;
+    }
+
+    tooltip.textContent = color.name;
+    tooltip.style.left = `${ev.pageX}px`;
+    tooltip.style.top = `${ev.pageY - 10}px`;
+    tooltip.style.opacity = "1";
+  });
+
+  canvas.addEventListener("mouseleave", () => {
+    tooltip.style.opacity = "0";
+  });
+});
 
 // Initial render
 renderAll();

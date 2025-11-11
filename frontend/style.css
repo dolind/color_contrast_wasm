@@ -40,4 +40,16 @@ body {
   max-width: 90vw;
 }
 
+#tooltip {
+  position: absolute;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;          /* start hidden */
+  transition: opacity 0.15s ease-out;
+  transform: translate(-50%, -120%);
+}
 

@@ -34,7 +34,8 @@ runBtn.onclick = async () => {
 
   // Call C++ function; returns std::vector<uint8_t> → typed array
 const result = Module.compute_grid(dim,iters);
-  drawGridRGB(result.colors, dim);
 
-  statusEl.textContent = `Done. Best of ${iters} iterations.`;
+console.log(result.score);
+console.log(result.colors[0].name);
+
 };

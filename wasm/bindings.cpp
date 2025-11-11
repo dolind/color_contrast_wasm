@@ -11,18 +11,52 @@
 using namespace color_contrast;
 
 // Same semantics as native main()
-GridResult wasm_compute_grid(int dim, int iterations)
+GridResult compute_grid(int dim, int iterations)
 {
     AlgorithmConfig cfg;
-    cfg.dim = dim;              // let algorithm choose or expose dim to JS
+    cfg.dim = dim;
     cfg.max_iterations = iterations;
 
     Engine e(std::make_unique<BruteForce>());
-    Grid best = e.compute(cfg);      // <-- identical logic to native main()
+    Grid best = e.compute(cfg);
 
-    // Let the grid convert itself to a JS-serializable result
     return best.toResult();
 }
+
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
+
+using namespace emscripten;
+
+val compute_grid_js(int dim, int iters)
+{
+    auto res = compute_grid(dim, iters); // This returns GridResult
+
+    val jsResult = val::object();
+    jsResult.set("score", res.score);
+
+    val jsArray = val::array();
+    for (size_t i = 0; i < res.colors.size(); ++i) {
+        const auto& cl = res.colors[i];
+
+        val jsColor = val::object();
+        jsColor.set("name", cl.name);
+
+        // ✅ proper array construction in embind
+        val rgb = val::array();
+        rgb.set(0, cl.rgbValue.r);
+        rgb.set(1, cl.rgbValue.g);
+        rgb.set(2, cl.rgbValue.b);
+
+        jsColor.set("rgb", rgb);
+        jsArray.set(i, jsColor);
+    }
+
+    jsResult.set("colors", jsArray);
+    return jsResult;
+}
+
+
 
 EMSCRIPTEN_BINDINGS(color_grid_module) {
 
@@ -41,5 +75,5 @@ EMSCRIPTEN_BINDINGS(color_grid_module) {
         .field("colors", &GridResult::colors)
         .field("score", &GridResult::score);
 
-    emscripten::function("compute_grid", &wasm_compute_grid);
+    emscripten::function("compute_grid", &compute_grid_js);
 }

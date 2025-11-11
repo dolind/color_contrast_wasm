@@ -75,5 +75,5 @@ EMSCRIPTEN_BINDINGS(color_grid_module) {
         .field("colors", &GridResult::colors)
         .field("score", &GridResult::score);
 
-    emscripten::function("compute_grid", &compute_grid_js);
+    emscripten::function("compute_grid", &compute_grid);
 }

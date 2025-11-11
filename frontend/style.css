@@ -53,3 +53,29 @@ body {
   transform: translate(-50%, -120%);
 }
 
+#grid-stats {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+#grid-stats table {
+  border-collapse: collapse;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+#grid-stats th,
+#grid-stats td {
+  padding: 6px 12px;
+  text-align: center;
+}
+
+#grid-stats th {
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+#grid-stats tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.04);
+}

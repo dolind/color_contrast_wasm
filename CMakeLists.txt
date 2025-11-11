@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8.1)
+cmake_minimum_required(VERSION 3.28.3)
 project(color_contrast VERSION 1.0.0 LANGUAGES CXX)
 
 # ======================================================
@@ -37,9 +37,47 @@ target_include_directories(color_contrast_engine
 )
 
 # ======================================================
-# Optional executable (you may delete if unnecessary)
+# Wasm target  (only active when building via emcmake)
 # ======================================================
 
+
+if (EMSCRIPTEN)
+    message(STATUS ">>> Building WebAssembly target")
+
+    add_executable(color_contrast_wasm
+        wasm/bindings.cpp
+    )
+
+    target_include_directories(color_contrast_wasm
+        PUBLIC
+            include
+    )
+
+    target_link_libraries(color_contrast_wasm
+        PRIVATE
+            color_contrast_engine
+    )
+
+    # Required wasm options
+target_link_options(color_contrast_wasm PRIVATE
+  "-sMODULARIZE=1"
+  "-sEXPORT_ES6=1"
+  "-sEXPORT_NAME=createColorGridModule"
+  "-sENVIRONMENT=web"
+  "-sWASM=1"
+  "-sALLOW_MEMORY_GROWTH=1"
+  "-sSINGLE_FILE=1"
+  "--bind"
+  "-sNO_EXIT_RUNTIME=1"
+)
+
+
+else()
+
+# ======================================================
+# Optional executable (you may delete if unnecessary)
+# ======================================================
+    message(STATUS ">>> Building Native target")
 add_executable(color_contrast
     src/main.cpp
 )
@@ -52,40 +90,5 @@ target_link_libraries(color_contrast
         color_contrast_engine
 )
 
-
-# ======================================================
-# Wasm target  (only active when building via emcmake)
-# ======================================================
-
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Emscripten")
-
-    message(STATUS ">>> Building WebAssembly target")
-
-    add_executable(colorgrid_wasm
-        wasm/bindings.cpp     # thin embind wrapper
-        src/grid.cpp
-        src/cell.cpp
-        src/engine.cpp
-        src/brute_force.cpp
-    )
-
-    target_include_directories(colorgrid_wasm PUBLIC include)
-
-    # Required wasm options
-    target_link_options(colorgrid_wasm PRIVATE
-        "-sALLOW_MEMORY_GROWTH=1"
-        "-sMODULARIZE=1"
-        "-sEXPORT_NAME=createColorGridModule"
-        "-sENVIRONMENT=web"
-        "-sWASM=1"
-        "-sEMBIND"
-    )
-
-    # Output to predictable folder: build_wasm/wasm_out/
-    set_target_properties(colorgrid_wasm PROPERTIES
-        OUTPUT_NAME "colorgrid"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/wasm_out"
-    )
 
 endif()

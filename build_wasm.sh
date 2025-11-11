@@ -22,5 +22,4 @@ cmake --build .
 echo "✅ WASM build done."
 
 popd
-cp build_wasm/color_contrast.js frontend/public/
-cp build_wasm/color_contrast.wasm frontend/public/
+cp build_wasm/color_contrast_wasm.js frontend/public/

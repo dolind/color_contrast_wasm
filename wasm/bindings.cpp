@@ -4,9 +4,10 @@
 #include <random>
 #include <emscripten/bind.h>
 
-#include "color_cell.hpp"
-#include "color_grid.hpp"
-
+#include "cell.hpp"
+#include "grid.hpp"
+#include "brute_force.hpp"
+#include "engine.hpp"
 using namespace color_contrast;
 
 // Same semantics as native main()

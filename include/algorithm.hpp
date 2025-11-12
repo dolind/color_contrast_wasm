@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "grid.hpp"
 
 struct AlgorithmConfig {
@@ -11,16 +13,19 @@ namespace color_contrast {
 
 class Algorithm {
 public:
+    explicit Algorithm(const AlgorithmConfig& cfg): cfg_(cfg){}
+
     virtual ~Algorithm() = default;
 
     // Compute best grid from given starting point
-    virtual Grid run(const AlgorithmConfig& cfg) = 0;
-    virtual Grid step(const AlgorithmConfig& cfg) = 0;
+    virtual GridResult run() = 0;
+    virtual GridResult step() = 0;
 
-    int getSteps(){return stepsDone;};
+    int getSteps() const{return stepsDone;};
 protected:
-    Grid bestGrid;
+    std::unique_ptr<BaseGrid> bestGrid;
     double bestScore = -1.0;
     int stepsDone = 0;
+    AlgorithmConfig cfg_;
 };
 }

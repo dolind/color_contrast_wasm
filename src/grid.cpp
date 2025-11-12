@@ -43,10 +43,6 @@ std::vector<std::uint32_t> pool(COLORS_AVAILABLE);
 
     }
 
-Grid::Grid(const Grid& grid)
-    : BaseGrid(grid)
-{}
-
 
 Grid::Grid(int width, int height)
     : BaseGrid(width, height)

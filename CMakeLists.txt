@@ -27,7 +27,6 @@ string(REPLACE "-march=native" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 add_library(color_contrast_engine
     src/grid.cpp
     src/cell.cpp
-    src/engine.cpp
     src/brute_force.cpp
 )
 

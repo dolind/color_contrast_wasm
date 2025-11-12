@@ -3,27 +3,27 @@
 namespace color_contrast {
 
 
-Grid BruteForce::run(const AlgorithmConfig& cfg)
+GridResult BruteForce::run()
 {
-    // Legacy full compute (still works if called normally)
-    for (int i = 0; i < cfg.max_iterations; ++i)
-        step(cfg);
 
-    return bestGrid;
+    for (int i = 0; i < cfg_.max_iterations; ++i)
+        step();
+
+    return bestGrid->toResult();
 }
 
-Grid BruteForce::step(const AlgorithmConfig& cfg)
+GridResult BruteForce::step()
 {
-    Grid trial(cfg.dim, cfg.dim);
+    std::unique_ptr<BaseGrid> trial = std::make_unique<Grid>(cfg_.dim, cfg_.dim);
 
-    double newScore = trial.getScore();
+    double newScore = trial->getScore();
     if (newScore > bestScore) {
         bestScore = newScore;
-        bestGrid = trial;
+        bestGrid = std::move(trial);
     }
 
     stepsDone++;
-   bestGrid.setIterations(stepsDone);
-    return bestGrid;
+    bestGrid->setIterations(stepsDone);
+    return bestGrid->toResult();
 }
 }

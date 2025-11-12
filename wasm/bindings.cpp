@@ -1,17 +1,15 @@
-#include <vector>
-#include <cstdint>
-#include <algorithm>
-#include <random>
+
+#include <memory>
+
 #include <emscripten/bind.h>
 
 #include "cell.hpp"
 #include "grid.hpp"
 #include "brute_force.hpp"
-#include "engine.hpp"
 using namespace color_contrast;
 
 
-std::unordered_map<int, std::unique_ptr<Engine>> engines;
+std::unordered_map<int, std::unique_ptr<Algorithm>> algos;
 
 
 void start_search(int id, int dim, int max_iters)
@@ -20,11 +18,11 @@ void start_search(int id, int dim, int max_iters)
     cfg.dim = dim;
     cfg.max_iterations = max_iters;
 
-    engines[id] = std::make_unique<Engine>(std::make_unique<BruteForce>(), cfg);
+    algos[id] = std::make_unique<BruteForce> (cfg);
     }
 
 GridResult step_search(int id) {
-    return engines[id]->step().toResult();
+    return algos[id]->step();
 }
 
 #include <emscripten/bind.h>

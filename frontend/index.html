@@ -23,14 +23,51 @@
     <div id="grid-stats"></div>  <!-- table injected by JS -->
 
     <div id="controls">
-        <label>
-            <input type="checkbox" id="constantCells" checked />
-            constant cell size
-        </label>
+
 
         <label>
             MaxTime [s]:
             <input id="iters" type="number" value="30" min="1" />
+        </label>
+        <fieldset>
+            <legend>Grid Type</legend>
+            <label>
+                <input type="radio" name="gridType" value="0" checked />
+                Simple
+            </label>
+            <label>
+                <input type="radio" name="gridType" value="1" />
+                Improved
+            </label>
+            <label>
+                <input type="radio" name="gridType" value="2" />
+                Hexagonal
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Algorithm</legend>
+            <label>
+                <input type="radio" name="algoType" value="0" checked />
+                Brut  Force
+            </label>
+            <label>
+                <input type="radio" name="algoType" value="1" />
+                Simulated Annealing
+            </label>
+            <label>
+                <input type="radio" name="algoType" value="2" />
+                Genetic
+            </label>
+        </fieldset>
+
+        <label>
+            <input type="checkbox" id="uniformColors" />
+            Uniform color distribution
+        </label>
+        <label>
+            <input type="checkbox" id="constantCells" checked />
+            constant cell size
         </label>
     </div>
 </div>

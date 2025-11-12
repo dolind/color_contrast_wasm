@@ -58,12 +58,12 @@ namespace color_contrast {
         int width() const { return m_width; }
         int height() const { return m_height; }
 
-        Cell &at(const int x, const int y) { return m_Cells[y * m_width + x]; }
-        const Cell &at(const int x, const int y) const { return m_Cells[y * m_width + x]; }
+        virtual Cell &at(const int x, const int y) { return m_Cells[y * m_width + x]; }
+        virtual const Cell &at(const int x, const int y) const { return m_Cells[y * m_width + x]; }
 
         void printToConsole() const;
 
-        GridResult toResult() const;
+        virtual GridResult toResult() const;
 
         void setIterations(const int i) { iterationCount = i; }
         int iterations() const { return iterationCount; }

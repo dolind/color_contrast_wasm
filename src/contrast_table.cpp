@@ -15,9 +15,15 @@ namespace color_contrast {
     // Improvement 5: precompute contrast and use in improvement 6
     void buildContrastTable()
     {
+        if (COLOR_MAP.contains(0))
+        {
+            std::cerr << "⚠️  Warning: COLOR_MAP already contains an entry with ID 0.\n"
+                         "   Cannot insert black as background; skipping extra black row.\n";
+        }
         const int COLORS_AVAILABLE = static_cast<int>(COLOR_MAP.size());
         contrastTable.assign(COLORS_AVAILABLE + 1, std::vector<double>(COLORS_AVAILABLE + 1, 0.0));
 
+        // insert all colors starting at 1
         for (const auto& [aID, colorA] : COLOR_MAP)
         {
             double lumA = rgb2lum(colorA.rgbValue);
@@ -29,6 +35,7 @@ namespace color_contrast {
             }
         }
 
+        // insert black as color 0
         const RGB black = {0, 0, 0};
         const double lumBlack = rgb2lum(black);
 

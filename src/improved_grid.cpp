@@ -69,6 +69,7 @@ namespace color_contrast {
             COilColor newColor = colors[colorNum];
             m_colors.emplace_back(newColor);
             m_Luminance.push_back(rgb2lum(newColor.rgbValue));
+            m_ColorIndices.push_back(colorNum - 1);
         }
 
         GridImprove::evaluateGridScore();
@@ -94,7 +95,7 @@ namespace color_contrast {
         {
             const int x = idx % w;
             const int y = idx / w;
-            const int centerIdx = m_Luminance[idx];
+            const int centerIdx = m_ColorIndices[idx];
 
             double cellScore = 0.0;
 
@@ -107,7 +108,7 @@ namespace color_contrast {
                 int neighborIdx = 0; // default = black border (index 0)
 
                 if (nx >= 0 && nx < w && ny >= 0 && ny < h)
-                    neighborIdx = m_Luminance[ny * w + nx];
+                    neighborIdx = m_ColorIndices[ny * w + nx];
 
                 cellScore += contrastTable[centerIdx][neighborIdx];
             }
@@ -117,5 +118,22 @@ namespace color_contrast {
 
         m_gridScore = score;
     }
+    GridResult GridImprove::toResult() const
+    {
+        GridResult result;
+        result.score = m_gridScore;
+        result.iterations = iterationCount;
+        result.colors.reserve(m_width * m_height);
 
+        for (int y = 0; y < m_height; ++y)
+        {
+            for (int x = 0; x < m_width; ++x)
+            {
+                const COilColor& color = m_colors[y * m_width + x];
+                result.colors.push_back({ color.name, color.rgbValue });
+            }
+        }
+
+        return result;
+    }
 } // namespace color_contrast

@@ -12,7 +12,7 @@ int main() {
         int id = 0;
         int dim = 6;
         int max_iters = 50000;
-        int grid_type = static_cast<int>(GridType::Simple);
+        int grid_type = static_cast<int>(GridType::Improved);
         int algo_type = static_cast<int>(AlgorithmType::BruteForce);
         int uniformColorDistribution = 0;
 

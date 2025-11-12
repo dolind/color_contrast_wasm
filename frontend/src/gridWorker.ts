@@ -3,14 +3,14 @@ export {};
 let wasmModule: any = null;
 
 self.onmessage = async (ev) => {
-    const { canvasIndex, dim, scriptUrl } = ev.data;
+    const { canvasIndex, dim, scriptUrl, gridType, algoType, uniformColorDistribution } = ev.data;
 
     if (!wasmModule) {
         const createModule = (await import(scriptUrl)).default;
         wasmModule = await createModule();
     }
 
-    wasmModule.start_search(canvasIndex, dim, 100);
+    wasmModule.start_search(canvasIndex, dim, 100, gridType, algoType, uniformColorDistribution);
 let lastSend = 0;
 
     function compute() {

@@ -25,6 +25,10 @@ const createModule = (await import(scriptUrl)).default;
 const constantCellsCheckbox = document.getElementById("constantCells") as HTMLInputElement;
 const canvases = Array.from(document.querySelectorAll("canvas.grid")) as HTMLCanvasElement[];
 
+const gridType = Number((document.getElementById("gridType") as HTMLSelectElement)?.value ?? 0);
+const algoType = Number((document.getElementById("algoType") as HTMLSelectElement)?.value ?? 0);
+const uniformColorDistribution = (document.getElementById("uniformColors") as HTMLInputElement)?.checked ? 1 : 0;
+
 let wasmModule: Awaited<ReturnType<typeof createModule>> | null = null;
 
 async function ensureModule() {
@@ -171,9 +175,12 @@ function assignTask(worker: Worker, canvasIndex: number) {
     stats[dim] = {score: 0, time: 0, iterations: 0, started: performance.now()};
 
     worker.postMessage({
-        canvasIndex,  // directly reference canvas
+        canvasIndex,
         dim,
-        scriptUrl
+        scriptUrl,
+        gridType: getSelectedValue("gridType"),
+        algoType: getSelectedValue("algoType"),
+        uniformColorDistribution: getUniformFlag()
     });
 }
 
@@ -219,6 +226,7 @@ async function animateAllGrids() {
 
 
     const maxTimeInput = document.getElementById("iters") as HTMLInputElement;
+
     const maxTimeSec = Number(maxTimeInput.value);
 
     stopTimeoutId = window.setTimeout(() => {
@@ -234,10 +242,11 @@ async function animateAllGrids() {
 }
 
 
-const maxTimeInput = document.getElementById("iters") as HTMLInputElement;
-maxTimeInput.addEventListener("change", () => {
-    console.log("⏹ Restarting due to new MaxTime input");
 
+function restartAllWorkers() {
+    console.log("🔁 Restarting due to control change");
+
+    // Stop current workers
     workers.forEach(w => w.terminate());
     workers.length = 0;
     taskQueue.length = 0;
@@ -248,7 +257,28 @@ maxTimeInput.addEventListener("change", () => {
     }
 
     animateAllGrids();
-});
+}
+const maxTimeInput = document.getElementById("iters") as HTMLInputElement;
+maxTimeInput.addEventListener("change", restartAllWorkers);
 
+// Re-run when algorithm or grid type changes
+document.querySelectorAll('input[name="gridType"]').forEach(el =>
+    el.addEventListener("change", restartAllWorkers)
+);
+document.querySelectorAll('input[name="algoType"]').forEach(el =>
+    el.addEventListener("change", restartAllWorkers)
+);
 
+// Re-run when uniform checkbox toggled
+document.getElementById("uniformColors")?.addEventListener("change", restartAllWorkers);
+
+// Re-run when constant cell sizing toggled
+function getSelectedValue(name: string): number {
+    const el = document.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
+    return el ? Number(el.value) : 0;
+}
+
+function getUniformFlag(): number {
+    return (document.getElementById("uniformColors") as HTMLInputElement)?.checked ? 1 : 0;
+}
 ensureModule().then(() => animateAllGrids());

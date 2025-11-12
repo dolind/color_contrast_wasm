@@ -16,10 +16,11 @@ namespace color_contrast {
 
         ~GridImprove() override = default;
 
+        GridResult toResult() const override;
     private:
         // Improvement 4 Merge cells to grid to avoid redundancy
         std::vector<COilColor> m_colors;
-
+        std::vector<int> m_ColorIndices;
         void evaluateGridScore() override;
     };
 } // namespace color_contrast

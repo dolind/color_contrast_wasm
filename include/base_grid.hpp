@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include <cstdint>
 #include "cell.hpp"
 
 namespace color_contrast {
@@ -10,8 +9,8 @@ namespace color_contrast {
 
     struct GridResult {
         std::vector<COilColor> colors;
-        double score;
-        int iterations;
+        double score{};
+        int iterations{};
     };
 
 
@@ -19,7 +18,7 @@ namespace color_contrast {
     public:
         BaseGrid() = default;
 
-        BaseGrid(int dim)
+        explicit BaseGrid(const int dim)
             : m_width(dim), m_height(dim) {
         }
 
@@ -32,14 +31,14 @@ namespace color_contrast {
         int width() const { return m_width; }
         int height() const { return m_height; }
 
-        Cell &at(int x, int y) { return m_Cells[y * m_width + x]; }
-        const Cell &at(int x, int y) const { return m_Cells[y * m_width + x]; }
+        Cell &at(const int x, const int y) { return m_Cells[y * m_width + x]; }
+        const Cell &at(const int x, const int y) const { return m_Cells[y * m_width + x]; }
 
         void printToConsole() const;
 
         GridResult toResult() const;
 
-        void setIterations(int i) { iterationCount = i; }
+        void setIterations(const int i) { iterationCount = i; }
         int iterations() const { return iterationCount; }
 
     protected:
@@ -76,7 +75,7 @@ namespace color_contrast {
         std::vector<double> m_Luminance;
         double m_gridScore = 0.0;
 
-        int m_width;
-        int m_height;
+        int m_width{};
+        int m_height{};
     };
 } // namespace color_contrast

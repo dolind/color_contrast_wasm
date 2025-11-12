@@ -20,8 +20,7 @@ namespace color_contrast {
                 throw std::invalid_argument("Unknown grid type");
         }
 
-        double newScore = trial->getScore();
-        if (newScore > bestScore) {
+        if (double newScore = trial->getScore(); newScore > bestScore) {
             bestScore = newScore;
             bestGrid = std::move(trial);
         }

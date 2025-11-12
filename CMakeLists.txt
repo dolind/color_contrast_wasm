@@ -28,6 +28,7 @@ add_library(color_contrast_engine
     src/grid.cpp
     src/cell.cpp
     src/brute_force.cpp
+        src/search.cpp
 )
 
 target_include_directories(color_contrast_engine

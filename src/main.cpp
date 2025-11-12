@@ -1,12 +1,40 @@
-#include "engine.hpp"
-#include "brute_force.hpp"
 #include <iostream>
+#include <memory>
+
+#include "algorithm.hpp"
+#include "search.hpp"
+
+using namespace color_contrast;
+
 
 int main() {
-    AlgorithmConfig cfg{50000};
+    try {
+        int id = 0;
+        int dim = 6;
+        int max_iters = 50000;
+        int grid_type = static_cast<int>(GridType::Simple);
+        int algo_type = static_cast<int>(AlgorithmType::BruteForce);
+        int uniformColorDistribution = 0;
 
-    color_contrast::Engine e(std::make_unique<color_contrast::BruteForce>());
-    auto best = e.compute(cfg);
-    best.printToConsole();
-    std::cout << "done\n";
+        // Initialize and run
+        start_search(id, dim, max_iters, grid_type, algo_type, uniformColorDistribution);
+
+        // Run until convergence or iteration limit
+        GridResult result;
+        for (int i = 0; i < max_iters; ++i) {
+            result = step_search(id);
+            // optional: stop early if score doesn’t improve
+        }
+
+        // Print result
+        std::cout << "Best score: " << result.score << "\n";
+        std::cout << "Iterations: " << result.iterations << "\n";
+        std::cout << "Done.\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+        return 1;
+    }
+
+    return 0;
 }

@@ -1,9 +1,6 @@
 #pragma once
-#include <vector>
-#include <unordered_map>
-#include <cstdint>
 #include "base_grid.hpp"
-#include "cell.hpp"
+
 
 
 namespace color_contrast {
@@ -13,9 +10,9 @@ namespace color_contrast {
 
         Grid(int dim, bool equalColorDistribution);
 
-        Grid(const Grid &grid);
+        Grid(const Grid &grid)= default;
 
-        ~Grid() = default;
+        ~Grid() override = default;
 
     private:
         void evaluateGridScore() override;

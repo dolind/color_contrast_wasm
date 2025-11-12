@@ -13,14 +13,14 @@ namespace color_contrast {
           m_luminance(rgb2lum(color.rgbValue)) {
     }
 
-    double Cell::lumcontrast(double secondLuminance) const {
+    double Cell::lumcontrast(const double secondLuminance) const {
         return std::abs(m_luminance - secondLuminance);
     }
 
-    double Cell::getContrastScore(const std::vector<double> &neighbourPixels) const {
+    double Cell::getContrastScore(const std::vector<double> &neighborPixels) const {
         double sumContrast = 0.0;
 
-        for (double lum: neighbourPixels)
+        for (double lum: neighborPixels)
             sumContrast += std::abs(m_luminance - lum);
 
         return sumContrast;

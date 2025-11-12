@@ -10,7 +10,7 @@ namespace color_contrast {
     //-----------------------------------------------------------
     // Helper to generate unique shuffled indices (original logic)
     //-----------------------------------------------------------
-    std::vector<std::uint32_t> getUniqueColorNum(std::uint32_t colorCount, bool equalColorDistribution) {
+    std::vector<std::uint32_t> getUniqueColorNum(const std::uint32_t colorCount, const bool equalColorDistribution) {
         std::mt19937 eng{std::random_device{}()};
         std::uniform_int_distribution<std::uint32_t> dist(1, COLORS_AVAILABLE);
 
@@ -49,7 +49,7 @@ namespace color_contrast {
         return result;
     }
 
-    Grid::Grid(int dim, bool equalColorDistribution)
+    Grid::Grid(const int dim, const bool equalColorDistribution)
         : BaseGrid(dim) {
         const auto colorNumbers = getUniqueColorNum(dim * dim, equalColorDistribution);
 
@@ -62,7 +62,7 @@ namespace color_contrast {
             m_Luminance.push_back(m_Cells.back().getLuminance());
         }
 
-        evaluateGridScore();
+        Grid::evaluateGridScore();
     }
 
     //-----------------------------------------------------------
@@ -95,7 +95,7 @@ namespace color_contrast {
                     }
                 }
 
-                // ask cell to score this neighbourhood
+                // ask cell to score this neighborhood
                 double cellScore = m_Cells[idx].getContrastScore(neighbours);
                 m_gridScore += cellScore;
             }

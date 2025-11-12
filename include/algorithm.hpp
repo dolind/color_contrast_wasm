@@ -33,7 +33,7 @@ namespace color_contrast {
 
         virtual ~Algorithm() = default;
 
-        // Compute best grid from given starting point
+        // Compute the best grid from a given starting point
         virtual GridResult run() = 0;
 
         virtual GridResult step() = 0;

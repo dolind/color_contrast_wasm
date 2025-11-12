@@ -7,18 +7,17 @@
 
 
 namespace color_contrast {
+    class Grid : public BaseGrid {
+    public:
+        Grid() = default;
 
+        Grid(int dim, bool equalColorDistribution);
 
-class Grid : public BaseGrid{
+        Grid(const Grid &grid);
 
-public:
-    Grid()=default;
-    Grid(int dim, bool equalColorDistribution);
-    Grid(const Grid& grid);
-    ~Grid() = default;
+        ~Grid() = default;
 
-private:
-void evaluateGridScore() override;
-};
-
+    private:
+        void evaluateGridScore() override;
+    };
 } // namespace color_contrast

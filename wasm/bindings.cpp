@@ -12,7 +12,7 @@ using namespace color_contrast;
 std::unordered_map<int, std::unique_ptr<Algorithm> > algos;
 
 
-void start_search(int id, int dim, int max_iters, int grid_type, int algo_type, int uniformColorDistribution ) {
+void start_search(int id, int dim, int max_iters, int grid_type, int algo_type, int uniformColorDistribution) {
     auto gtype = static_cast<GridType>(grid_type);
     auto atype = static_cast<AlgorithmType>(algo_type);
 

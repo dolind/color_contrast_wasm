@@ -21,8 +21,8 @@ class BaseGrid {
 
 public:
     BaseGrid() = default;
-    BaseGrid(int width, int height)
-        : m_width(width), m_height(height)
+    BaseGrid(int dim)
+        : m_width(dim), m_height(dim)
     {}
     BaseGrid(const BaseGrid& grid) = default;
     virtual ~BaseGrid() = default;

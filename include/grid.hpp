@@ -13,7 +13,7 @@ class Grid : public BaseGrid{
 
 public:
     Grid()=default;
-    Grid(int width, int height);
+    Grid(int dim, bool equalColorDistribution);
     Grid(const Grid& grid);
     ~Grid() = default;
 

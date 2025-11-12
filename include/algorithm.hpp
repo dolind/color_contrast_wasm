@@ -3,10 +3,27 @@
 
 #include "grid.hpp"
 
+enum class AlgorithmType {
+    BruteForce,
+    BeamSearch,
+    SimulatedAnnealing,
+    Genetic
+};
+
+enum class GridType {
+    Simple,
+    Improved,
+    Random
+};
+
 struct AlgorithmConfig {
     int max_iterations = 5000;
     int dim = 6;
     int beam_width = 0;
+    bool uniformColorDistribution = false;
+    AlgorithmType algo = AlgorithmType::BruteForce;
+    GridType grid_type = GridType::Simple;
+
 };
 namespace color_contrast {
 

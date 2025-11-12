@@ -14,7 +14,7 @@ namespace color_contrast {
         std::unique_ptr<BaseGrid> trial;
         switch (cfg_.grid_type) {
             case GridType::Simple:
-                trial = std::make_unique<Grid>(cfg_.dim, cfg_.dim);
+                trial = std::make_unique<Grid>(cfg_.dim, cfg_.uniformColorDistribution);
                 break;
             default:
                 throw std::invalid_argument("Unknown grid type");

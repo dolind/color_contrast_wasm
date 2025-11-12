@@ -16,6 +16,8 @@ namespace color_contrast {
         RGB rgbValue;
     };
 
+
+
     class Cell {
     public:
         explicit Cell(const COilColor &color);

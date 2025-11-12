@@ -3,6 +3,8 @@
 
 #include "algorithm.hpp"
 #include "brute_force.hpp"
+#include "contrast_table.hpp"
+
 
 using namespace color_contrast;
 
@@ -20,6 +22,7 @@ void start_search(int id, int dim, int max_iters, int grid_type, int algo_type, 
     cfg.algo = atype;
     cfg.uniformColorDistribution = uniformColorDistribution;
 
+    buildContrastTable();
     switch (atype) {
         case AlgorithmType::BruteForce:
             algos[id] = std::make_unique<BruteForce>(cfg);

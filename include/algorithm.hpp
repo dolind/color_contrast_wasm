@@ -40,6 +40,7 @@ namespace color_contrast {
         virtual GridResult step() = 0;
 
         int getSteps() const { return stepsDone; };
+        BaseGrid* getBestGrid() const { return bestGrid.get(); }
 
     protected:
         std::unique_ptr<BaseGrid> bestGrid;

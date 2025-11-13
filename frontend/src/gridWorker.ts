@@ -3,48 +3,54 @@ export {};
 let wasmModule: any = null;
 
 self.onmessage = async (ev) => {
-    const { canvasIndex, dim, scriptUrl, gridType, algoType, uniformColorDistribution } = ev.data;
+    const {
+        canvasIndex,
+        dim,
+        scriptUrl,
+        gridType,
+        algoType,
+        uniformColorDistribution,
+        sab
+    } = ev.data;
 
     if (!wasmModule) {
         const createModule = (await import(scriptUrl)).default;
         wasmModule = await createModule();
     }
 
+    const sharedRGB = new Uint8Array(sab);
+    const rgbLen = sharedRGB.length;
+    const wasmRGBPtr = wasmModule._malloc(rgbLen);
+
     wasmModule.start_search(canvasIndex, dim, 100, gridType, algoType, uniformColorDistribution);
-let lastSend = 0;
+
+    let lastSend = 0;
 
     function compute() {
-        // ⏱ allow up to 4 ms of compute per chunk (~250 chunks/sec)
         const end = performance.now() + 4;
+        let lastStepInfo: any = null;
 
+        // do as many steps as possible in this 4ms budget
         while (performance.now() < end) {
-            // 🚀 compute as fast as CPU allows
-            wasmModule.step_search(canvasIndex);
+            lastStepInfo = wasmModule.step_search_info(canvasIndex);
         }
 
-        // throttle messaging to ~60 FPS
+        // throttle messaging to ~20 FPS
         const now = performance.now();
-        if (now - lastSend > 16) {
-            const result = wasmModule.step_search(canvasIndex); // or whichever method returns state
+
+        if (now - lastSend > 50) {
+
+            wasmModule.export_grid_rgb(canvasIndex, wasmRGBPtr, rgbLen);
+            const wasmRGB = wasmModule.HEAPU8.subarray(wasmRGBPtr, wasmRGBPtr + rgbLen);
+            sharedRGB.set(wasmRGB);
 
             // serialize colors to real JS objects
-            const size = result.colors.size();
-            const serializedColors = Array.from({ length: size }, (_, i) => {
-                const c = result.colors.get(i);
-                return {
-                    name: c.name,
-                    rgbValue: { ...c.rgbValue }
-                };
+            self.postMessage({
+                canvasIndex,
+                score: lastStepInfo.score,
+                iterations: lastStepInfo.iterations
             });
 
-            postMessage({
-                canvasIndex,
-                result: {
-                    score: result.score,
-                    iterations: result.iterations,
-                    colors: serializedColors
-                }
-            });
 
             lastSend = now;
         }

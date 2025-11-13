@@ -74,6 +74,8 @@ if (EMSCRIPTEN)
             "--bind"
             "-sNO_EXIT_RUNTIME=1"
             "-sASSERTIONS"
+            "-sEXPORTED_FUNCTIONS=['_malloc','_free']"
+            "-sEXPORTED_RUNTIME_METHODS=['HEAPU8','ccall','cwrap']"
     )
 
 

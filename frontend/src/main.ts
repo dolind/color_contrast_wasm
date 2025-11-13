@@ -31,6 +31,9 @@ const uniformColorDistribution = (document.getElementById("uniformColors") as HT
 
 let wasmModule: Awaited<ReturnType<typeof createModule>> | null = null;
 
+const canvasRGBBuffers: SharedArrayBuffer[] = [];
+const canvasRGBViews: Uint8Array[] = [];
+
 async function ensureModule() {
     if (!wasmModule) {
         wasmModule = await createModule();
@@ -38,23 +41,23 @@ async function ensureModule() {
     return wasmModule;
 }
 
-
-function drawGrid(canvas: HTMLCanvasElement, result: GridResult, dim: number) {
+function drawGridFromRGB(canvas: HTMLCanvasElement, rgb: Uint8Array, dim: number) {
     const ctx = canvas.getContext("2d")!;
     const cellPx = canvas.width / dim;
-
-    gridData.set(canvas, {colors: result.colors, dim});
 
     let k = 0;
     for (let y = 0; y < dim; y++) {
         for (let x = 0; x < dim; x++) {
-            const {r, g, b} = result.colors[k].rgbValue;
-            k++;
+            const r = rgb[k++];
+            const g = rgb[k++];
+            const b = rgb[k++];
+
             ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
             ctx.fillRect(x * cellPx, y * cellPx, cellPx, cellPx);
         }
     }
 }
+
 
 function sizeCanvases(): void {
     const useConstantCellSize = constantCellsCheckbox.checked;
@@ -189,7 +192,18 @@ function updateStatsTable() {
     }
 }
 
+function initSharedBuffers() {
+    canvases.forEach((canvas, canvasIndex) => {
+        const dim = Number(canvas.dataset.dim);
+        const bytes = dim * dim * 3;
 
+        const sab = new SharedArrayBuffer(bytes);
+        const view = new Uint8Array(sab);
+
+        canvasRGBBuffers[canvasIndex] = sab;
+        canvasRGBViews[canvasIndex] = view;
+    });
+}
 
 import workerUrl from "./gridWorker.ts?worker&url"; // 👈 important
 
@@ -210,12 +224,14 @@ function assignTask(worker: Worker, canvasIndex: number) {
         scriptUrl,
         gridType: getSelectedValue("gridType"),
         algoType: getSelectedValue("algoType"),
-        uniformColorDistribution: getUniformFlag()
+        uniformColorDistribution: getUniformFlag(),
+        sab: canvasRGBBuffers[canvasIndex]
     });
 }
 
 async function animateAllGrids() {
     sizeCanvases();
+    initSharedBuffers();
     await ensureModule();
 
     // build queue with numeric indexes
@@ -226,16 +242,17 @@ async function animateAllGrids() {
         const worker = new Worker(workerUrl, {type: "module"});
 
         worker.onmessage = (ev) => {
-            const {canvasIndex, result} = ev.data;
+            const { canvasIndex, score, iterations } = ev.data;
             const canvas = canvases[canvasIndex];
             const dim = Number(canvas.dataset.dim);
 
-            drawGrid(canvas, result, dim);
+            const rgbView = canvasRGBViews[canvasIndex];
+            drawGridFromRGB(canvas, rgbView, dim);
 
             stats[dim] = {
-                score: result.score,
+                score,
                 time: performance.now() - stats[dim].started,
-                iterations: result.iterations,
+                iterations,
                 started: stats[dim].started
             };
 

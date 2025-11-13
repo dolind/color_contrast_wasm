@@ -11,24 +11,18 @@ using namespace color_contrast;
 using namespace emscripten;
 
 
-EMSCRIPTEN_BINDINGS (color_grid_module) {
-    emscripten::value_object<RGB>("RGB")
-            .field("r", &RGB::r)
-            .field("g", &RGB::g)
-            .field("b", &RGB::b);
+EMSCRIPTEN_BINDINGS(my_module) {
+        value_object<StepInfo>("StepInfo")
+            .field("score", &StepInfo::score)
+            .field("iterations", &StepInfo::iterations);
 
-    emscripten::value_object<COilColor>("COilColor")
-            .field("name", &COilColor::name)
-            .field("rgbValue", &COilColor::rgbValue);
+        function("start_search", &start_search);
+        function("step_search_info", &step_search_info);
 
-    emscripten::register_vector<COilColor>("vector<COilColor>");
-
-    emscripten::value_object<GridResult>("GridResult")
-            .field("colors", &GridResult::colors)
-            .field("score", &GridResult::score)
-            .field("iterations", &GridResult::iterations);
-
-
-    emscripten::function("start_search", &start_search);
-    emscripten::function("step_search", &step_search);
+        function("export_grid_rgb",
+            optional_override([](int id, uintptr_t ptr, int len) {
+                auto* buf = reinterpret_cast<std::uint8_t*>(ptr);
+                export_grid_rgb(id, buf, len);
+            })
+        );
 }

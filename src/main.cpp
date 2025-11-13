@@ -10,10 +10,10 @@ using namespace color_contrast;
 int main() {
     try {
         int id = 0;
-        int dim = 6;
+        int dim = 3;
         int max_iters = 50000;
         int grid_type = static_cast<int>(GridType::Improved);
-        int algo_type = static_cast<int>(AlgorithmType::BruteForce);
+        int algo_type = static_cast<int>(AlgorithmType::HillClimbing);
         int uniformColorDistribution = 0;
 
         // Initialize and run

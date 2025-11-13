@@ -14,11 +14,11 @@ namespace color_contrast {
     //-----------------------------------------------------------
     //Improvement 2: static rng
     static thread_local std::mt19937 eng{std::random_device{}()};
-    static thread_local std::uniform_int_distribution<std::uint32_t> dist(1, COLORS_AVAILABLE);
+    static thread_local std::uniform_int_distribution dist(1, COLORS_AVAILABLE);
 
     //Improvement 3: assignment of colors
-    std::vector<std::uint32_t> getUniqueColorNum2(std::uint32_t colorCount, bool equalColorDistribution) {
-        std::vector<std::uint32_t> pool(COLORS_AVAILABLE);
+    std::vector<std::int32_t> getUniqueColorNum2(std::uint32_t colorCount, bool equalColorDistribution) {
+        std::vector<std::int32_t> pool(COLORS_AVAILABLE);
         std::iota(pool.begin(), pool.end(), 1);
         std::shuffle(pool.begin(), pool.end(), eng);
 
@@ -27,7 +27,7 @@ namespace color_contrast {
             return pool;
         }
 
-        std::vector<std::uint32_t> result(pool.begin(), pool.end());
+        std::vector result(pool.begin(), pool.end());
         result.reserve(colorCount);
 
         // then fill remaining slots with duplicates (sampling with replacement)
@@ -136,4 +136,23 @@ namespace color_contrast {
 
         return result;
     }
+
+    void GridImprove::swapCells(int a, int b) {
+        std::swap(m_ColorIndices[a], m_ColorIndices[b]);
+        std::swap(m_colors[a], m_colors[b]);
+        std::swap(m_Luminance[a], m_Luminance[b]);
+    }
+
+    void GridImprove::recolorCell(int idx, int newColorIndex) {
+        m_ColorIndices[idx] = newColorIndex;
+        const COilColor& c = colors[newColorIndex + 1];
+        m_colors[idx] = c;
+        m_Luminance[idx] = 0.299*c.rgbValue.r + 0.587*c.rgbValue.g + 0.114*c.rgbValue.b;
+    }
+    void GridImprove::updateDelta(int idx) { evaluateGridScore(); }
+    void GridImprove::updateDelta(int a, int b) { evaluateGridScore(); }
+
+    void GridImprove::restoreDelta(int idx) { evaluateGridScore(); }
+    void GridImprove::restoreDelta(int a, int b) { evaluateGridScore(); }
+
 } // namespace color_contrast

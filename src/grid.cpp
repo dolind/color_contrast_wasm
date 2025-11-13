@@ -10,21 +10,21 @@ namespace color_contrast {
     //-----------------------------------------------------------
     // Helper to generate unique shuffled indices (original logic)
     //-----------------------------------------------------------
-    std::vector<std::uint32_t> getUniqueColorNum(const std::uint32_t colorCount, const bool equalColorDistribution) {
+    std::vector<std::int32_t> getUniqueColorNum(const std::uint32_t colorCount, const bool equalColorDistribution) {
         std::mt19937 eng{std::random_device{}()};
-        std::uniform_int_distribution<std::uint32_t> dist(1, COLORS_AVAILABLE);
+        std::uniform_int_distribution dist(1, COLORS_AVAILABLE);
 
-        std::vector<std::uint32_t> result;
+        std::vector<std::int32_t> result;
         result.reserve(colorCount);
 
         if (colorCount <= COLORS_AVAILABLE) {
-            std::vector<std::uint32_t> pool(COLORS_AVAILABLE);
+            std::vector<std::int32_t> pool(COLORS_AVAILABLE);
             std::iota(pool.begin(), pool.end(), 1);
             std::shuffle(pool.begin(), pool.end(), eng);
             pool.resize(colorCount);
             return pool;
         }
-        std::vector<std::uint32_t> pool(COLORS_AVAILABLE);
+        std::vector<std::int32_t> pool(COLORS_AVAILABLE);
         std::iota(pool.begin(), pool.end(), 1);
         std::shuffle(pool.begin(), pool.end(), eng);
 

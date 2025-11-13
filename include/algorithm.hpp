@@ -4,10 +4,11 @@
 #include "grid.hpp"
 
 enum class AlgorithmType {
-    BruteForce,
-    BeamSearch,
-    SimulatedAnnealing,
-    Genetic
+    BruteForce=0,
+    HillClimbing=1,
+    BeamSearch=2,
+    SimulatedAnnealing=3,
+    Genetic=4
 };
 
 enum class GridType {

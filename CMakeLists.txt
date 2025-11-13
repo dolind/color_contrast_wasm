@@ -31,6 +31,7 @@ add_library(color_contrast_engine
         src/search.cpp
         src/improved_grid.cpp
         src/contrast_table.cpp
+        src/hill_climb.cpp
 
 )
 
@@ -72,6 +73,7 @@ if (EMSCRIPTEN)
             "-sSINGLE_FILE=1"
             "--bind"
             "-sNO_EXIT_RUNTIME=1"
+            "-sASSERTIONS"
     )
 
 

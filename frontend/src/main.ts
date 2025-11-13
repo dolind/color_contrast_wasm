@@ -86,13 +86,23 @@ constantCellsCheckbox?.addEventListener("change", () => {
 });
 
 const tooltip = document.getElementById("tooltip") as HTMLDivElement;
+const tooltipTextNode = document.createTextNode("");
+tooltip.innerHTML = "";
+tooltip.appendChild(tooltipTextNode);
+
+// Pre-calc styles (avoids layout trashing)
+tooltip.style.position = "absolute";
+tooltip.style.pointerEvents = "none";
+tooltip.style.opacity = "0";
 canvases.forEach(canvas => {
     canvas.addEventListener("mousemove", (ev) => {
         const data = gridData.get(canvas);
-        if (!data) return;
+        if (!data) {
+            tooltip.style.opacity = "0";
+            return;
+        }
 
-        const {colors, dim} = data;
-
+        const { colors, dim } = data;
         const rect = canvas.getBoundingClientRect();
         const x = ev.clientX - rect.left;
         const y = ev.clientY - rect.top;
@@ -108,9 +118,14 @@ canvases.forEach(canvas => {
             return;
         }
 
-        tooltip.textContent = color.name;
-        tooltip.style.left = `${ev.pageX}px`;
-        tooltip.style.top = `${ev.pageY - 10}px`;
+        // Only update text if it changes (prevents allocating new text nodes)
+        if (tooltipTextNode.nodeValue !== color.name) {
+            tooltipTextNode.nodeValue = color.name;
+        }
+
+        // Use transform-based movement (no layout flush)
+        tooltip.style.left = `${ev.clientX + 10}px`;
+        tooltip.style.top = `${ev.clientY - 10}px`;
         tooltip.style.opacity = "1";
     });
 
@@ -119,46 +134,61 @@ canvases.forEach(canvas => {
     });
 });
 
+
+const tableDiv = document.getElementById("grid-stats")!;
+const timeDiv = document.getElementById("grid-time")!;
+
+const statsTable = document.createElement("table");
+const thead = document.createElement("thead");
+const headerRow = document.createElement("tr");
+
+["dim", "score", "iterations"].forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    headerRow.appendChild(th);
+});
+
+thead.appendChild(headerRow);
+statsTable.appendChild(thead);
+
+const tbody = document.createElement("tbody");
+statsTable.appendChild(tbody);
+
+tableDiv.appendChild(statsTable);
+
+// keep rows reusable:
+const statsRows = new Map<number, HTMLTableRowElement>();
+
 function updateStatsTable() {
-    const div = document.getElementById("grid-stats")!;
-    const timeDiv = document.getElementById("grid-time")!; // new separate display
+    for (const dimStr of Object.keys(stats)) {
+        const dim = Number(dimStr);
+        const s = stats[dim];
 
-    const rows = Object.keys(stats)
-        .sort((a, b) => Number(a) - Number(b))
-        .map(dimStr => {
-            const dim = Number(dimStr);
-            const s = stats[dim];
-
-            return `
-                <tr>
-                  <td>${dim}</td>
-                  <td>${s.score.toFixed(2)}</td>
-                  <td>${s.iterations}</td>
-                </tr>
+        let row = statsRows.get(dim);
+        if (!row) {
+            row = document.createElement("tr");
+            row.innerHTML = `
+                <td class="dim"></td>
+                <td class="score"></td>
+                <td class="iterations"></td>
             `;
-        })
-        .join("");
+            statsRows.set(dim, row);
+            tbody.appendChild(row);
+        }
 
-    div.innerHTML = `
-      <table>
-        <thead>
-          <tr>
-            <th>dim</th>
-            <th>score</th>
-            <th>iterations</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `;
+        row.querySelector(".dim")!.textContent = String(dim);
+        row.querySelector(".score")!.textContent = s.score.toFixed(2);
+        row.querySelector(".iterations")!.textContent = String(s.iterations);
+    }
 
-    // ⏱ show most recent elapsed time separately
+    // update time (simple text update → no leak)
     const maxDim = Math.max(...Object.keys(stats).map(Number));
     const last = stats[maxDim];
     if (last) {
         timeDiv.textContent = `Elapsed time: ${last.time.toFixed(1)} ms`;
     }
 }
+
 
 
 import workerUrl from "./gridWorker.ts?worker&url"; // 👈 important

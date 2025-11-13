@@ -6,6 +6,7 @@
 #include "algorithm.hpp"
 #include "brute_force.hpp"
 #include "contrast_table.hpp"
+#include "hill_climb.hpp"
 
 
 using namespace color_contrast;
@@ -27,15 +28,17 @@ void start_search(int id, int dim, int max_iters, int grid_type, int algo_type, 
     cfg.uniformColorDistribution = uniformColorDistribution;
 
     buildContrastTable();
+
     switch (atype) {
         case AlgorithmType::BruteForce:
             algos[id] = std::make_unique<BruteForce>(cfg);
             break;
 
-        // case AlgorithmType::BeamSearch:
-        //     algos[id] = std::make_unique<BeamSearch>(std::move(cfg));
-        //     break;
-        //
+        case AlgorithmType::HillClimbing:
+            algos[id] = std::make_unique<HillClimb>(cfg);
+
+            break;
+
         // case AlgorithmType::SimulatedAnnealing:
         //     algos[id] = std::make_unique<SimulatedAnnealing>(std::move(cfg));
         //     break;

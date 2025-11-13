@@ -6,8 +6,9 @@
 enum class AlgorithmType {
     BruteForce=0,
     HillClimbing=1,
-    BeamSearch=2,
     SimulatedAnnealing=3,
+    BeamSearch=2,
+
     Genetic=4
 };
 
@@ -24,6 +25,11 @@ struct AlgorithmConfig {
     bool uniformColorDistribution = false;
     AlgorithmType algo = AlgorithmType::BruteForce;
     GridType grid_type = GridType::Simple;
+
+    // Parameters for simulated annealing
+    double startTemp = 1.0;
+    double endTemp   = 0.001;
+    double cooling   = 0.9995;
 };
 
 namespace color_contrast {

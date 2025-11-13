@@ -32,6 +32,7 @@ add_library(color_contrast_engine
         src/improved_grid.cpp
         src/contrast_table.cpp
         src/hill_climb.cpp
+        src/simulated_annealing.cpp
 
 )
 

@@ -14,6 +14,9 @@ namespace color_contrast {
 
         ~Grid() override = default;
 
+        RGB getRGBAtIndex(int idx) const override {
+            return m_Cells[idx].getRGBColor();
+        }
     private:
         void evaluateGridScore() override;
     };

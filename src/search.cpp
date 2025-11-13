@@ -53,11 +53,12 @@ void start_search(int id, int dim, int max_iters, int grid_type, int algo_type, 
             throw std::invalid_argument("Unknown algorithm type");
     }
 }
+
 // TODO: this produces a memory leak as wasm memory will grow due to copy.
 // Must be done using
 StepInfo step_search_info(int id) {
-    auto& algo = *algos.at(id);
-    auto res = algo.step();   // this modifies algo.bestGrid internally
+    auto &algo = *algos.at(id);
+    auto res = algo.step(); // this modifies algo.bestGrid internally
 
     StepInfo info;
     info.score = res.score;
@@ -65,9 +66,9 @@ StepInfo step_search_info(int id) {
     return info;
 }
 
-void export_grid_rgb(int id, std::uint8_t* out, int max_len) {
-    auto& algo = *algos.at(id);
-    auto* grid = algo.getBestGrid();
+void export_grid_rgb(int id, std::uint8_t *out, int max_len) {
+    auto &algo = *algos.at(id);
+    auto *grid = algo.getBestGrid();
     if (!grid) return;
 
     const int w = grid->width();
@@ -77,13 +78,11 @@ void export_grid_rgb(int id, std::uint8_t* out, int max_len) {
     if (max_len < needed) return; // guard
 
     int idx = 0;
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-            const auto& cell = grid->at(x, y);
-            RGB rgb = cell.getRGBColor();
-            out[idx++] = rgb.r;
-            out[idx++] = rgb.g;
-            out[idx++] = rgb.b;
-        }
+    const int total = w * h;
+    for (int i = 0; i < total; ++i) {
+        RGB rgb = grid->getRGBAtIndex(i);
+        out[idx++] = rgb.r;
+        out[idx++] = rgb.g;
+        out[idx++] = rgb.b;
     }
 }

@@ -48,7 +48,7 @@ namespace color_contrast {
         explicit BaseGrid(const int dim)
             : m_width(dim), m_height(dim) {
         }
-
+        virtual RGB getRGBAtIndex(int idx) const = 0;
         BaseGrid(const BaseGrid &grid) = default;
 
         virtual ~BaseGrid() = default;

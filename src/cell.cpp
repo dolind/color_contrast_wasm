@@ -7,10 +7,10 @@ namespace color_contrast {
         return (rgbColor.r * 299 + rgbColor.g * 587 + rgbColor.b * 114) * 0.001;
     }
 
-    Cell::Cell(const COilColor &color)
+    Cell::Cell(const COilColor &color, int colorIndex)
         : m_rgbColor(color.rgbValue),
           m_name(color.name),
-          m_luminance(rgb2lum(color.rgbValue)) {
+          m_luminance(rgb2lum(color.rgbValue)),m_colorIndex(colorIndex){
     }
 
     double Cell::lumcontrast(const double secondLuminance) const {

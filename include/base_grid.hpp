@@ -64,7 +64,7 @@ namespace color_contrast {
         void printToConsole() const;
 
         virtual GridResult toResult() const;
-
+        virtual int getColorIndex(int idx) const = 0;
         void setIterations(const int i) { iterationCount = i; }
         int iterations() const { return iterationCount; }
 

@@ -10,7 +10,8 @@ self.onmessage = async (ev) => {
         gridType,
         algoType,
         uniformColorDistribution,
-        sab
+        sab,
+        sabIDX
     } = ev.data;
 
     if (!wasmModule) {
@@ -19,6 +20,7 @@ self.onmessage = async (ev) => {
     }
 
     const sharedRGB = new Uint8Array(sab);
+    const sharedIDX = new Uint8Array(sabIDX);
     const rgbLen = sharedRGB.length;
     const wasmRGBPtr = wasmModule._malloc(rgbLen);
 
@@ -43,7 +45,9 @@ self.onmessage = async (ev) => {
             wasmModule.export_grid_rgb(canvasIndex, wasmRGBPtr, rgbLen);
             const wasmRGB = wasmModule.HEAPU8.subarray(wasmRGBPtr, wasmRGBPtr + rgbLen);
             sharedRGB.set(wasmRGB);
-
+            for (let i = 0; i < sharedIDX.length; i++) {
+                sharedIDX[i] = wasmModule.get_color_index(canvasIndex, i);
+            }
             // serialize colors to real JS objects
             self.postMessage({
                 canvasIndex,

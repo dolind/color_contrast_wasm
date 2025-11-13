@@ -13,3 +13,5 @@ StepInfo step_search_info(int id);
 
 // We use this function to avoid returning a struct which contains the grid, but used shared memory
 void export_grid_rgb(int id, std::uint8_t* out, int max_len);
+
+int get_color_index(int id, int cell) ;

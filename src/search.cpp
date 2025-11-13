@@ -86,3 +86,11 @@ void export_grid_rgb(int id, std::uint8_t *out, int max_len) {
         out[idx++] = rgb.b;
     }
 }
+
+int get_color_index(int id, int cell) {
+    auto& algo = *algos.at(id);
+    auto* grid = algo.getBestGrid();
+    if (!grid) return -1;
+
+    return grid->getColorIndex(cell);
+}

@@ -17,10 +17,9 @@ namespace color_contrast {
     };
 
 
-
     class Cell {
     public:
-        explicit Cell(const COilColor &color);
+        explicit Cell(const COilColor &color, int colorIndex);
 
         ~Cell() = default;
 
@@ -35,9 +34,12 @@ namespace color_contrast {
 
         double getContrastScore(const std::vector<double> &neighborPixels) const;
 
+        int getColorIndex() const { return m_colorIndex; }
+
     private:
         RGB m_rgbColor;
         std::string m_name;
         double m_luminance;
+        int m_colorIndex{};
     };
 }

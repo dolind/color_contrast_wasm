@@ -4,15 +4,37 @@ type WasmVector<T> = {
     get(index: number): T;
     size(): number;
 };
-type GridResult = { colors: OilColor[]; score: number; iterations: number; };
+
+// 1-based index to match COLOR_MAP keys (1..24)
+const COLOR_NAMES: (string | null)[] = [
+    null, // 0 unused
+    "White",
+    "Pale Blue",
+    "Azure Blue",
+    "Yellow Ocre",
+    "Mandarin",
+    "Intense Red",
+    "Ultramarine Blue",
+    "Ruby Red",
+    "Delft Blue",
+    "Geranium Lake Light",
+    "Celestial Blue",
+    "Red Brown",
+    "Celadon Green",
+    "Brown Madder",
+    "Cinnabar Green",
+    "Raw Umber",
+    "Green Medium",
+    "Burnt Umber",
+    "Pine Green",
+    "Reddish Brown Grey",
+    "Lemon Yellow",
+    "Grey Green",
+    "Yellow Deep",
+    "Black"
+];
 
 
-interface GridData {
-    colors: OilColor[];
-    dim: number;
-}
-
-const gridData = new WeakMap<HTMLCanvasElement, GridData>();
 const stats: Record<number, {
     score: number;
     time: number;
@@ -33,6 +55,9 @@ let wasmModule: Awaited<ReturnType<typeof createModule>> | null = null;
 
 const canvasRGBBuffers: SharedArrayBuffer[] = [];
 const canvasRGBViews: Uint8Array[] = [];
+
+const canvasIndexBuffers: SharedArrayBuffer[] = [];
+const canvasIndexViews: Uint8Array[] = [];
 
 async function ensureModule() {
     if (!wasmModule) {
@@ -97,15 +122,13 @@ tooltip.appendChild(tooltipTextNode);
 tooltip.style.position = "absolute";
 tooltip.style.pointerEvents = "none";
 tooltip.style.opacity = "0";
-canvases.forEach(canvas => {
+canvases.forEach((canvas, canvasIndex) => {
     canvas.addEventListener("mousemove", (ev) => {
-        const data = gridData.get(canvas);
-        if (!data) {
-            tooltip.style.opacity = "0";
-            return;
-        }
+        const dim = Number(canvas.dataset.dim);
+        const idxView = canvasIndexViews[canvasIndex];
 
-        const { colors, dim } = data;
+        if (!idxView) return;
+
         const rect = canvas.getBoundingClientRect();
         const x = ev.clientX - rect.left;
         const y = ev.clientY - rect.top;
@@ -115,18 +138,10 @@ canvases.forEach(canvas => {
         const row = Math.floor(y / cellPx);
         const idx = row * dim + col;
 
-        const color = colors[idx];
-        if (!color) {
-            tooltip.style.opacity = "0";
-            return;
-        }
+        const colorID = idxView[idx];
+        const name = COLOR_NAMES[colorID] ?? "Unknown";
 
-        // Only update text if it changes (prevents allocating new text nodes)
-        if (tooltipTextNode.nodeValue !== color.name) {
-            tooltipTextNode.nodeValue = color.name;
-        }
-
-        // Use transform-based movement (no layout flush)
+        tooltipTextNode.nodeValue = name;
         tooltip.style.left = `${ev.clientX + 10}px`;
         tooltip.style.top = `${ev.clientY - 10}px`;
         tooltip.style.opacity = "1";
@@ -195,13 +210,18 @@ function updateStatsTable() {
 function initSharedBuffers() {
     canvases.forEach((canvas, canvasIndex) => {
         const dim = Number(canvas.dataset.dim);
-        const bytes = dim * dim * 3;
+        const cells = dim * dim;
 
-        const sab = new SharedArrayBuffer(bytes);
-        const view = new Uint8Array(sab);
+        // RGB buffer
+        const rgbBytes = cells * 3;
+        const rgbSAB = new SharedArrayBuffer(rgbBytes);
+        canvasRGBBuffers[canvasIndex] = rgbSAB;
+        canvasRGBViews[canvasIndex] = new Uint8Array(rgbSAB);
 
-        canvasRGBBuffers[canvasIndex] = sab;
-        canvasRGBViews[canvasIndex] = view;
+        // NEW: index buffer
+        const idxSAB = new SharedArrayBuffer(cells);  // 1 byte per cell
+        canvasIndexBuffers[canvasIndex] = idxSAB;
+        canvasIndexViews[canvasIndex] = new Uint8Array(idxSAB);
     });
 }
 
@@ -225,7 +245,8 @@ function assignTask(worker: Worker, canvasIndex: number) {
         gridType: getSelectedValue("gridType"),
         algoType: getSelectedValue("algoType"),
         uniformColorDistribution: getUniformFlag(),
-        sab: canvasRGBBuffers[canvasIndex]
+        sab: canvasRGBBuffers[canvasIndex],
+        sabIDX: canvasIndexBuffers[canvasIndex]
     });
 }
 

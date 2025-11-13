@@ -58,7 +58,7 @@ namespace color_contrast {
 
         for (std::uint32_t colorNum: colorNumbers) {
             COilColor newColor = colors[colorNum];
-            m_Cells.emplace_back(newColor);
+            m_Cells.emplace_back(newColor, colorNum);
             m_Luminance.push_back(m_Cells.back().getLuminance());
         }
 

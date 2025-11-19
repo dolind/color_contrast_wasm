@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/color_contrast_wasm/',
   server: {
     port: 5173,
     headers: {

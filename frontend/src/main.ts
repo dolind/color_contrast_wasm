@@ -1,10 +1,3 @@
-type RGB = { r: number; g: number; b: number };
-type OilColor = { name: string; rgbValue: RGB };
-type WasmVector<T> = {
-    get(index: number): T;
-    size(): number;
-};
-
 // 1-based index to match COLOR_MAP keys (1..24)
 const COLOR_NAMES: (string | null)[] = [
     null, // 0 unused
@@ -46,10 +39,6 @@ const createModule = (await import(scriptUrl)).default;
 
 const constantCellsCheckbox = document.getElementById("constantCells") as HTMLInputElement;
 const canvases = Array.from(document.querySelectorAll("canvas.grid")) as HTMLCanvasElement[];
-
-const gridType = Number((document.getElementById("gridType") as HTMLSelectElement)?.value ?? 0);
-const algoType = Number((document.getElementById("algoType") as HTMLSelectElement)?.value ?? 0);
-const uniformColorDistribution = (document.getElementById("uniformColors") as HTMLInputElement)?.checked ? 1 : 0;
 
 let wasmModule: Awaited<ReturnType<typeof createModule>> | null = null;
 

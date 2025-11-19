@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <unordered_set>
 
 #include "contrast_table.hpp"
 
@@ -48,7 +49,10 @@ namespace color_contrast {
         return result;
     }
 
-
+    int GridImprove::countDistinctColors() const {
+        std::unordered_set<int> s(m_ColorIndices.begin(), m_ColorIndices.end());
+        return (int)s.size();
+    }
 
     GridImprove::GridImprove(const GridImprove &grid)
         : BaseGrid(grid) {

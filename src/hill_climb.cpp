@@ -60,7 +60,7 @@ bool HillClimb::trySwap(GridImprove* g) {
     g->updateDelta(a, b);
 
     double newScore = g->getScore();
-    if (newScore >= oldScore) {
+    if (newScore > oldScore) {
         bestScore = newScore;
         return true;
     }
@@ -84,10 +84,21 @@ bool HillClimb::tryRecolor(GridImprove* g) {
 
     if (newColor == oldColor) return false;
 
+    const int targetDistinct =
+        std::min(total, COLORS_AVAILABLE);
+
     double oldScore = g->getScore();
 
     g->recolorCell(idx, newColor);
     g->updateDelta(idx);
+
+    // Reject recolors that reduce distinct colors
+    if (g->countDistinctColors() < targetDistinct) {
+        // Undo recolor
+        g->recolorCell(idx, oldColor);
+        g->restoreDelta(idx);
+        return false;
+    }
 
     if (g->getScore() >= oldScore) {
         bestScore = g->getScore();

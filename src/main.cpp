@@ -6,29 +6,24 @@
 
 using namespace color_contrast;
 
-
 int main() {
     try {
         int id = 0;
         int dim = 3;
-        int max_iters = 50000;
+        int max_iters = 200000;
         int grid_type = static_cast<int>(GridType::Improved);
         int algo_type = static_cast<int>(AlgorithmType::HillClimbing);
         int uniformColorDistribution = 0;
 
-        // Initialize and run
         start_search(id, dim, max_iters, grid_type, algo_type, uniformColorDistribution);
 
-        // Run until convergence or iteration limit
-        GridResult result;
+        StepInfo info{};
         for (int i = 0; i < max_iters; ++i) {
-            result = step_search(id);
-            // optional: stop early if score doesn’t improve
+            info = step_search_info(id);
         }
 
-        // Print result
-        std::cout << "Best score: " << result.score << "\n";
-        std::cout << "Iterations: " << result.iterations << "\n";
+        std::cout << "Best score: " << info.score << "\n";
+        std::cout << "Iterations: " << info.iterations << "\n";
         std::cout << "Done.\n";
     }
     catch (const std::exception& e) {

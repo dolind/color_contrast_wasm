@@ -29,7 +29,7 @@ struct AlgorithmConfig {
     // Parameters for simulated annealing
     double startTemp = 1.0;
     double endTemp   = 0.001;
-    double cooling   = 0.9995;
+    double cooling   = 0.999999;
 };
 
 namespace color_contrast {

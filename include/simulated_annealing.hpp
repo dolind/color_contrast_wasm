@@ -13,6 +13,8 @@ namespace color_contrast {
         GridResult step() override;
 
     private:
+        std::unique_ptr<GridImprove> currentGrid;
+
         // RNG
         std::mt19937 rng;
 

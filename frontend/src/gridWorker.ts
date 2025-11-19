@@ -1,4 +1,3 @@
-export {};
 
 let wasmModule: any = null;
 
@@ -48,7 +47,7 @@ self.onmessage = async (ev) => {
             for (let i = 0; i < sharedIDX.length; i++) {
                 sharedIDX[i] = wasmModule.get_color_index(canvasIndex, i);
             }
-            // serialize colors to real JS objects
+
             self.postMessage({
                 canvasIndex,
                 score: lastStepInfo.score,

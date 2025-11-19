@@ -7,14 +7,16 @@ SimulatedAnnealing::SimulatedAnnealing(const AlgorithmConfig& cfg)
     : Algorithm(cfg),
       rng(std::random_device{}())
 {
-    bestGrid = std::make_unique<GridImprove>(cfg.dim, cfg.uniformColorDistribution);
+    currentGrid = std::make_unique<GridImprove>(cfg.dim, cfg.uniformColorDistribution);
+    bestGrid    = std::make_unique<GridImprove>(*currentGrid);
+
     bestScore = bestGrid->getScore();
     stepsDone = 0;
 
     // Read temperature schedule from config
     T0 = cfg.startTemp;       // e.g. 1.0
     Tend = cfg.endTemp;       // e.g. 0.001
-    cooling = cfg.cooling;    // e.g. 0.9995
+    cooling = std::pow(Tend / T0, 1.0 / cfg.max_iterations);;    // e.g. 0.9995
     T = T0;
 }
 
@@ -28,14 +30,16 @@ GridResult SimulatedAnnealing::run() {
 GridResult SimulatedAnnealing::step() {
     ++stepsDone;
 
-    auto* g = dynamic_cast<GridImprove*>(bestGrid.get());
+    GridImprove* g = currentGrid.get();
     double oldScore = g->getScore();
 
     bool accepted = tryMove(g, oldScore);
     if (accepted) {
         double newScore = g->getScore();
-        if (newScore > bestScore)
+        if (newScore > bestScore) {
             bestScore = newScore;
+            *bestGrid = *currentGrid;
+        }
     }
 
     // Cool temperature
@@ -57,7 +61,7 @@ bool SimulatedAnnealing::tryMove(GridImprove* g, double oldScore) {
 
 bool SimulatedAnnealing::accept(double delta) {
     // If improvement → always accept
-    if (delta >= 0)
+    if (delta > 0)
         return true;
 
     // Otherwise accept with probability exp(delta / T)
@@ -113,9 +117,21 @@ bool SimulatedAnnealing::tryRecolor(GridImprove* g, double oldScore) {
 
     if (oldC == newC) return false;
 
+    const int targetDistinct = std::min(total, COLORS_AVAILABLE);
+
+
     // Apply move
     g->recolorCell(idx, newC);
     g->updateDelta(idx);
+
+    // Reject recolors that reduce distinct colors
+    // Should be improved to limit color frequencies
+    if (g->countDistinctColors() < targetDistinct) {
+        // Undo recolor
+        g->recolorCell(idx, oldC);
+        g->restoreDelta(idx);
+        return false;
+    }
 
     double newScore = g->getScore();
     double delta = newScore - oldScore;

@@ -1,7 +1,5 @@
 #include "search.hpp"
 
-#include <iostream>
-#include <ostream>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -9,6 +7,7 @@
 #include "brute_force.hpp"
 #include "contrast_table.hpp"
 #include "hill_climb.hpp"
+#include "simulated_annealing.hpp"
 
 
 using namespace color_contrast;
@@ -41,24 +40,21 @@ void start_search(int id, int dim, int max_iters, int grid_type, int algo_type, 
 
             break;
 
-        // case AlgorithmType::SimulatedAnnealing:
-        //     algos[id] = std::make_unique<SimulatedAnnealing>(std::move(cfg));
-        //     break;
-        //
-        // case AlgorithmType::Genetic:
-        //     algos[id] = std::make_unique<GeneticAlgorithm>(std::move(cfg));
-        //     break;
+        case AlgorithmType::SimulatedAnnealing:
+            algos[id] = std::make_unique<SimulatedAnnealing>(cfg);
+            break;
+;
 
         default:
             throw std::invalid_argument("Unknown algorithm type");
     }
 }
 
-// TODO: this produces a memory leak as wasm memory will grow due to copy.
-// Must be done using
+
 StepInfo step_search_info(int id) {
     auto &algo = *algos.at(id);
-    auto res = algo.step(); // this modifies algo.bestGrid internally
+    auto res = algo.step();
+
 
     StepInfo info;
     info.score = res.score;

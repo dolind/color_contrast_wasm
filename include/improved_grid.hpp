@@ -33,7 +33,7 @@ namespace color_contrast {
             // use the m_colors vector, which is actually valid here
             return m_colors[idx].rgbValue;
         }
-
+        int countDistinctColors() const;
     private:
         // Improvement 4 Merge cells to grid to avoid redundancy
         std::vector<COilColor> m_colors;
